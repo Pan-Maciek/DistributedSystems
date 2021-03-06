@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Server;
+using static System.Text.Encoding;
 
 const int port = 3000;
 var serverEndPoint = new IPEndPoint(IPAddress.Loopback, port);
@@ -39,10 +40,15 @@ void HandleUdpMessages() {
     while (true) {
         EndPoint endPoint = new IPEndPoint(IPAddress.Any, port);
         var len = udpSocket.ReceiveFrom(buffer, ref endPoint);
+        var username = (from c in clients
+                        where c.EndPoint.Equals(endPoint)
+                        select c.Username).First();
+        var message = $"{username}> {UTF8.GetString(buffer, 0, len)}";
+        var payload = UTF8.GetBytes(message);
         lock (clients) {
             foreach (var c in clients) {
                 if (c.EndPoint.Equals(endPoint)) continue;
-                udpSocket.SendTo(buffer, 0, len, SocketFlags.None, c.EndPoint);
+                udpSocket.SendTo(payload, c.EndPoint);
             }
         }
     }
