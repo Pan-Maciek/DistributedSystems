@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using static System.Text.Encoding;
 
-const int port = 3000;
+const int port = 3030;
 const int multiCastPort = 4000;
 var serverEndPoint = new IPEndPoint(IPAddress.Loopback, port);
 var localMultiCastEndPoint = new IPEndPoint(IPAddress.Any, multiCastPort);
@@ -58,9 +58,15 @@ void HandleUdpMulticastMessage() {
 }
 
 void HandleTcpMessage() {
-    while (true) {
-        var message = reader!.ReadString();
-        Console.WriteLine(message);
+    try {
+        while (true) {
+            var message = reader!.ReadString();
+            Console.WriteLine(message);
+        }
+    }
+    catch (Exception e) {
+        Console.WriteLine("Disconnected from the server!");
+        Environment.Exit(0);
     }
 }
 
@@ -69,7 +75,6 @@ Task.Factory.StartNew(HandleUdpMessage);
 Task.Factory.StartNew(HandleUdpMulticastMessage);
 
 while (true) {
-    Console.Write($"{username}> ");
     var message = Console.ReadLine()!;
     if (message == "U") { // send UDP UniCast message
         var payload = UTF8.GetBytes("This message is sent via UDP datagram UniCast");

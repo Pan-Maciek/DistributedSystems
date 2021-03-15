@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Server;
 using static System.Text.Encoding;
 
-const int port = 3000;
+const int port = 3030;
 var serverEndPoint = new IPEndPoint(IPAddress.Loopback, port);
 
 var tcpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -24,15 +24,23 @@ void HandleNewConnection(Socket socket) {
         clients.Add(client);
     }
 
-    while (true) {
-        var message = client.ReadMessage();
-        lock (clients) {
-            foreach (var c in clients) {
-                if (c.EndPoint.Equals(client.EndPoint)) continue;
-                c.SendMessage($"{client.Username}> {message}");
+    try {
+        while (true) {
+            var message = client.ReadMessage();
+            lock (clients) {
+                foreach (var c in clients) {
+                    if (c.EndPoint.Equals(client.EndPoint)) continue;
+                    c.SendMessage($"{client.Username}> {message}");
+                }
             }
         }
+    } catch (Exception e) {
+        lock (clients) {
+            clients.Remove(client);
+        }
     }
+
+    Console.WriteLine("Client disconnected!");
 }
 
 void HandleUdpMessages() {

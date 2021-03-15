@@ -17,7 +17,7 @@ namespace Server {
         }
 
         public static Client CreateFromSocket(Socket socket) {
-            var netStream = new NetworkStream(socket);
+            var netStream = new NetworkStream(socket, true);
 
             var reader = new BinaryReader(netStream);
             var writer = new BinaryWriter(netStream);
@@ -27,13 +27,8 @@ namespace Server {
             return new Client(reader, writer, socket.RemoteEndPoint!, username);
         }
 
-        public string ReadMessage() {
-            var message = _reader.ReadString();
-            return message;
-        }
+        public string ReadMessage() => _reader.ReadString();
 
-        public void SendMessage(string message) {
-            _writer.Write(message);
-        }
+        public void SendMessage(string message) => _writer.Write(message);
     }
 }
